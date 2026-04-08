@@ -1,70 +1,220 @@
-# Getting Started with Create React App
+# SafeTrack — Web Dashboard 🌐
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+![SafeTrack](https://img.shields.io/badge/SafeTrack-Live-brightgreen)
+![React](https://img.shields.io/badge/React-19.x-blue)
+![Firebase](https://img.shields.io/badge/Firebase-Realtime%20DB-orange)
+![Vercel](https://img.shields.io/badge/Hosted-Vercel-black)
+![License](https://img.shields.io/badge/License-MIT-green)
 
-## Available Scripts
+Real-Time Location Tracking Web Dashboard with Intelligent Emergency Alerts
 
-In the project directory, you can run:
+🔗 **Live Demo:** https://safetrack-web-999.vercel.app
 
-### `npm start`
+---
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## 📸 Screenshots
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+| Live Map | Speed Chart | History |
+|---|---|---|
+| Real-time GPS tracking | Speed analytics | Location history |
 
-### `npm test`
+---
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## ✨ Features
 
-### `npm run build`
+- 🗺️ **Live Map** — Real-time GPS tracking with OpenStreetMap
+- 🛣️ **Road Snapping** — Routes follow actual roads using OSRM API
+- 📍 **Address Display** — Real street addresses using Nominatim + BigDataCloud
+- 📊 **Speed Chart** — Live speed analytics with max/avg stats
+- 🚨 **SOS Alerts** — Emergency alert panel with audio alarm
+- 📜 **Location History** — Last 100 points with timestamps and addresses
+- 📄 **PDF Export** — Download full location history as PDF report
+- 🔴 **Geofence** — Inside/outside zone detection
+- 🎬 **Route Replay** — Animated playback of complete journey
+- 👤 **User Profile** — Name, email, phone number display
+- 🗺️ **Map Styles** — Street, Satellite, Terrain, Dark
+- 👥 **Multi-user** — Track multiple devices simultaneously
+- ✕ **Remove User** — Delete tracked user from dashboard
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+---
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## 🛠️ Tech Stack
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+| Technology | Version | Purpose |
+|---|---|---|
+| React.js | 19.x | Web framework |
+| Firebase SDK | 12.x | Real-time database + auth |
+| React-Leaflet | 5.x | Interactive maps |
+| OpenStreetMap | Free | Map tiles |
+| Recharts | 3.x | Speed charts |
+| jsPDF | 4.x | PDF generation |
+| OSRM API | Free | Road snapping |
+| Nominatim | Free | Reverse geocoding |
+| BigDataCloud | Free | Reverse geocoding |
+| Vercel | Free | Hosting |
 
-### `npm run eject`
+---
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## 🚀 Getting Started
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### Prerequisites
+- Node.js 18+
+- npm or yarn
+- Firebase project
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+### Installation
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+```bash
+# Clone the repository
+git clone https://github.com/SandeshPatil13989/safetrack-web.git
 
-## Learn More
+# Navigate to project
+cd safetrack-web
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+# Install dependencies
+npm install
+```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### Firebase Configuration
 
-### Code Splitting
+1. Create a Firebase project at [console.firebase.google.com](https://console.firebase.google.com)
+2. Enable **Authentication** (Email/Password)
+3. Enable **Realtime Database**
+4. Copy your Firebase config
+5. Create `src/firebase.js`:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+```javascript
+import { initializeApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
+import { getDatabase } from "firebase/database";
 
-### Analyzing the Bundle Size
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_AUTH_DOMAIN",
+  databaseURL: "YOUR_DATABASE_URL",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_STORAGE_BUCKET",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+const app = initializeApp(firebaseConfig);
+export const auth = getAuth(app);
+export const database = getDatabase(app);
+```
 
-### Making a Progressive Web App
+### Running Locally
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+```bash
+npm start
+```
 
-### Advanced Configuration
+Open [http://localhost:3000](http://localhost:3000)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+### Building for Production
 
-### Deployment
+```bash
+npm run build
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+---
 
-### `npm run build` fails to minify
+## 📁 Project Structure
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+```
+safetrack-web/
+├── public/
+│   └── index.html
+├── src/
+│   ├── App.js              # Main app with auth routing
+│   ├── App.css             # Global styles
+│   ├── firebase.js         # Firebase configuration
+│   └── pages/
+│       ├── LoginPage.js    # Login/Register page
+│       └── Dashboard.js    # Main dashboard (all features)
+├── package.json
+└── README.md
+```
+
+---
+
+## 🌐 Deployment on Vercel
+
+1. Push code to GitHub
+2. Go to [vercel.com](https://vercel.com)
+3. Import your GitHub repository
+4. Set build command: `CI=false react-scripts build`
+5. Deploy!
+
+### Add Vercel domain to Firebase:
+1. Go to Firebase Console → Authentication → Settings → Authorised domains
+2. Add your Vercel URL (e.g., `safetrack-web-999.vercel.app`)
+
+---
+
+## 🔥 Firebase Database Structure
+
+```
+safetrack-3742c/
+├── locations/
+│   └── {uid}/
+│       ├── current/        # Latest location
+│       │   ├── latitude
+│       │   ├── longitude
+│       │   ├── speed
+│       │   ├── accuracy
+│       │   └── timestamp
+│       └── history/        # Last 100 points
+│           └── {pushId}/
+├── sos/
+│   └── {uid}/
+│       ├── active
+│       ├── timestamp
+│       └── userName
+├── geofences/
+│   └── {uid}/
+│       └── {fenceId}/
+│           ├── name
+│           ├── latitude
+│           ├── longitude
+│           └── radius
+└── users/
+    └── {uid}/
+        ├── name
+        ├── email
+        └── phone
+```
+
+---
+
+## 📊 Performance
+
+| Metric | Value |
+|---|---|
+| Location Update Rate | Every 2-3 seconds |
+| Dashboard Refresh | < 1 second (Firebase live) |
+| Address Lookup | 1-2 seconds |
+| Road Snapping | 2-5 seconds |
+| PDF Generation | Instant |
+| Max Users Tracked | Unlimited |
+
+---
+
+## 🔗 Related Repository
+
+📱 **Mobile App:** https://github.com/SandeshPatil13989/safetrack-mobile
+
+---
+
+## 👨‍💻 Developer
+
+**Sandesh(Roshan) Patil**
+- 🎓 B.E. Computer Science and Engineering
+- 🏫 Jain College of Engineering, Belagavi
+- 🎓 Visvesvaraya Technological University (VTU)
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License.
