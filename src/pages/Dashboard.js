@@ -22,6 +22,19 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
 });
 
+const SafeTrackLogo = ({ size = 30 }) => (
+  <svg width={size} height={size} viewBox="0 0 100 100">
+    <circle cx="50" cy="50" r="48" fill="#0D1F3C"/>
+    <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(46,204,113,0.15)" strokeWidth="1.5"/>
+    <circle cx="50" cy="50" r="32" fill="none" stroke="rgba(46,204,113,0.25)" strokeWidth="1.5"/>
+    <circle cx="50" cy="50" r="22" fill="rgba(46,134,193,0.2)" stroke="#2E86C1" strokeWidth="1.5"/>
+    <path d="M50 28 Q64 28 64 42 Q64 54 50 68 Q36 54 36 42 Q36 28 50 28 Z" fill="#2E86C1"/>
+    <circle cx="50" cy="42" r="7" fill="white"/>
+    <circle cx="50" cy="42" r="3" fill="#2E86C1"/>
+    <circle cx="50" cy="70" r="3.5" fill="#2ECC71"/>
+  </svg>
+);
+
 function MapController({ position, selectedUser }) {
   const map = useMap();
   const lastUserRef = useRef(null);
@@ -123,7 +136,6 @@ export default function Dashboard() {
   const addressTimers = useRef([]);
   const prevSOSRef = useRef(0);
 
-  // SOS alarm
   const playSOSAlarm = () => {
     try {
       const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -143,7 +155,6 @@ export default function Dashboard() {
     } catch (e) {}
   };
 
-  // PDF Export
   const exportPDF = () => {
     setIsExportingPDF(true);
     try {
@@ -259,7 +270,6 @@ export default function Dashboard() {
     setIsExportingPDF(false);
   };
 
-  // Current location address
   useEffect(() => {
     if (!currentLocation) return;
     const timer = setTimeout(() => {
@@ -285,7 +295,6 @@ export default function Dashboard() {
     return () => clearTimeout(timer);
   }, [currentLocation]);
 
-  // History addresses
   useEffect(() => {
     addressTimers.current.forEach(clearTimeout);
     addressTimers.current = [];
@@ -340,47 +349,27 @@ export default function Dashboard() {
     return () => addressTimers.current.forEach(clearTimeout);
   }, [locationHistory]);
 
-  // OSRM Road Snapping
   useEffect(() => {
-    if (locationHistory.length < 2) {
-      setSnappedRoute([]);
-      return;
-    }
-
+    if (locationHistory.length < 2) { setSnappedRoute([]); return; }
     const snapToRoads = async () => {
       setIsSnapping(true);
       try {
         const points = locationHistory.slice(-100);
-        const coords = points
-          .map((p) => p.longitude.toFixed(6) + "," + p.latitude.toFixed(6))
-          .join(";");
-
+        const coords = points.map((p) => p.longitude.toFixed(6) + "," + p.latitude.toFixed(6)).join(";");
         const res = await fetch(
-          "https://router.project-osrm.org/match/v1/driving/" +
-          coords +
-          "?overview=full&geometries=geojson&radiuses=" +
-          points.map(() => "25").join(";")
+          "https://router.project-osrm.org/match/v1/driving/" + coords +
+          "?overview=full&geometries=geojson&radiuses=" + points.map(() => "25").join(";")
         );
         const data = await res.json();
-
         if (data.code === "Ok" && data.matchings && data.matchings.length > 0) {
-          const routeCoords = data.matchings.flatMap((m) =>
-            m.geometry.coordinates.map((c) => [c[1], c[0]])
-          );
-          setSnappedRoute(routeCoords);
-        } else {
-          setSnappedRoute([]);
-        }
-      } catch (e) {
-        setSnappedRoute([]);
-      }
+          setSnappedRoute(data.matchings.flatMap((m) => m.geometry.coordinates.map((c) => [c[1], c[0]])));
+        } else { setSnappedRoute([]); }
+      } catch (e) { setSnappedRoute([]); }
       setIsSnapping(false);
     };
-
     snapToRoads();
   }, [locationHistory]);
 
-  // Speed chart
   useEffect(() => {
     if (locationHistory.length === 0) return;
     const data = locationHistory.slice(-30).map((point, i) => ({
@@ -391,24 +380,17 @@ export default function Dashboard() {
     setSpeedData(data);
   }, [locationHistory]);
 
-  // Route replay
   useEffect(() => {
     if (isReplaying && locationHistory.length > 0) {
       replayRef.current = setInterval(() => {
         setReplayIndex((prev) => {
-          if (prev >= locationHistory.length - 1) {
-            setIsReplaying(false);
-            clearInterval(replayRef.current);
-            return prev;
-          }
+          if (prev >= locationHistory.length - 1) { setIsReplaying(false); clearInterval(replayRef.current); return prev; }
           const next = prev + 1;
           setReplayPos({ lat: locationHistory[next].latitude, lng: locationHistory[next].longitude });
           return next;
         });
       }, 300);
-    } else {
-      clearInterval(replayRef.current);
-    }
+    } else { clearInterval(replayRef.current); }
     return () => clearInterval(replayRef.current);
   }, [isReplaying, locationHistory]);
 
@@ -419,11 +401,7 @@ export default function Dashboard() {
     setIsReplaying(true);
   };
 
-  const stopReplay = () => {
-    setIsReplaying(false);
-    setReplayPos(null);
-    clearInterval(replayRef.current);
-  };
+  const stopReplay = () => { setIsReplaying(false); setReplayPos(null); clearInterval(replayRef.current); };
 
   const removeUser = (uid, name, e) => {
     e.stopPropagation();
@@ -441,56 +419,32 @@ export default function Dashboard() {
       if (snapshot.exists()) {
         const data = snapshot.val();
         const users = {};
-        Object.keys(data).forEach((uid) => {
-          if (data[uid].current) users[uid] = data[uid].current;
-        });
+        Object.keys(data).forEach((uid) => { if (data[uid].current) users[uid] = data[uid].current; });
         setTrackedUsers(users);
         if (!selectedUser && Object.keys(users).length > 0) setSelectedUser(Object.keys(users)[0]);
       } else { setTrackedUsers({}); }
     });
-
     const sosRef = ref(database, "sos");
-    onValue(sosRef, (snapshot) => {
-      if (snapshot.exists()) setSosAlerts(snapshot.val());
-    });
-
+    onValue(sosRef, (snapshot) => { if (snapshot.exists()) setSosAlerts(snapshot.val()); });
     const usersRef = ref(database, "users");
     onValue(usersRef, (snapshot) => {
       if (snapshot.exists()) {
         const data = snapshot.val();
-        const names = {};
-        const profiles = {};
-        Object.keys(data).forEach((uid) => {
-          names[uid] = data[uid].name || "User " + uid.substring(0, 6);
-          profiles[uid] = data[uid];
-        });
-        setUserNames(names);
-        setUserProfiles(profiles);
+        const names = {}; const profiles = {};
+        Object.keys(data).forEach((uid) => { names[uid] = data[uid].name || "User " + uid.substring(0, 6); profiles[uid] = data[uid]; });
+        setUserNames(names); setUserProfiles(profiles);
       }
     });
-
-    return () => {
-      off(ref(database, "locations"));
-      off(ref(database, "sos"));
-      off(ref(database, "users"));
-    };
+    return () => { off(ref(database, "locations")); off(ref(database, "sos")); off(ref(database, "users")); };
   }, []);
 
   useEffect(() => {
     if (!selectedUser) return;
-    setIsReplaying(false);
-    setReplayPos(null);
-    setCurrentLocation(null);
-    setLocationHistory([]);
-    setHistoryAddresses({});
-    setSnappedRoute([]);
+    setIsReplaying(false); setReplayPos(null); setCurrentLocation(null);
+    setLocationHistory([]); setHistoryAddresses({}); setSnappedRoute([]);
     clearInterval(replayRef.current);
-
     const currentRef = ref(database, "locations/" + selectedUser + "/current");
-    onValue(currentRef, (snapshot) => {
-      if (snapshot.exists()) setCurrentLocation(snapshot.val());
-    });
-
+    onValue(currentRef, (snapshot) => { if (snapshot.exists()) setCurrentLocation(snapshot.val()); });
     const historyRef = ref(database, "locations/" + selectedUser + "/history");
     onValue(historyRef, (snapshot) => {
       if (snapshot.exists()) {
@@ -499,13 +453,8 @@ export default function Dashboard() {
         setLocationHistory(data.slice(-100));
       } else { setLocationHistory([]); }
     });
-
     const geofenceRef = ref(database, "geofences/" + selectedUser);
-    onValue(geofenceRef, (snapshot) => {
-      if (snapshot.exists()) setGeofences(snapshot.val());
-      else setGeofences({});
-    });
-
+    onValue(geofenceRef, (snapshot) => { if (snapshot.exists()) setGeofences(snapshot.val()); else setGeofences({}); });
     return () => {
       off(ref(database, "locations/" + selectedUser + "/current"));
       off(ref(database, "locations/" + selectedUser + "/history"));
@@ -514,11 +463,7 @@ export default function Dashboard() {
   }, [selectedUser]);
 
   const activeSOS = Object.entries(sosAlerts).filter(([, v]) => v.active);
-
-  useEffect(() => {
-    if (activeSOS.length > prevSOSRef.current) playSOSAlarm();
-    prevSOSRef.current = activeSOS.length;
-  }, [activeSOS.length]);
+  useEffect(() => { if (activeSOS.length > prevSOSRef.current) playSOSAlarm(); prevSOSRef.current = activeSOS.length; }, [activeSOS.length]);
 
   const formatTime = (ts) => { try { return new Date(ts).toLocaleString(); } catch (e) { return ts; } };
   const getTimeDiff = (ts) => {
@@ -548,37 +493,26 @@ export default function Dashboard() {
   const currentMapStyle = MAP_STYLES.find((s) => s.id === mapStyle) || MAP_STYLES[0];
   const maxSpeed = Math.max(...speedData.map(d => d.speed), 0);
   const avgSpeed = speedData.length > 0 ? speedData.reduce((a, b) => a + b.speed, 0) / speedData.length : 0;
-
-  const openGoogleMaps = () => {
-    if (currentLocation) window.open("https://www.google.com/maps?q=" + currentLocation.latitude + "," + currentLocation.longitude, "_blank");
-  };
-
-  const activeMarkerPos = replayPos
-    ? [replayPos.lat, replayPos.lng]
-    : currentLocation ? [currentLocation.latitude, currentLocation.longitude] : null;
-
+  const openGoogleMaps = () => { if (currentLocation) window.open("https://www.google.com/maps?q=" + currentLocation.latitude + "," + currentLocation.longitude, "_blank"); };
+  const activeMarkerPos = replayPos ? [replayPos.lat, replayPos.lng] : currentLocation ? [currentLocation.latitude, currentLocation.longitude] : null;
   const selectedProfile = userProfiles[selectedUser] || {};
-  const getHistoryAddress = (point) => {
-    const key = point.latitude.toFixed(6) + "," + point.longitude.toFixed(6);
-    return historyAddresses[key] || "Loading...";
-  };
+  const getHistoryAddress = (point) => { const key = point.latitude.toFixed(6) + "," + point.longitude.toFixed(6); return historyAddresses[key] || "Loading..."; };
 
   return (
     <div style={S.app}>
-
       {activeSOS.length > 0 && (
         <div style={S.sosBanner}>
           <span style={{ fontSize: "16px" }}>🚨</span>
           {"EMERGENCY — " + activeSOS.length + " SOS ALERT ACTIVE"}
-          {activeSOS.map(([uid]) => (
-            <span key={uid} style={S.sosNameTag}>{getUserName(uid)}</span>
-          ))}
+          {activeSOS.map(([uid]) => (<span key={uid} style={S.sosNameTag}>{getUserName(uid)}</span>))}
         </div>
       )}
 
       <div style={S.header}>
         <div style={S.headerLeft}>
-          <div style={S.logoBox}><div style={S.logoDot}></div></div>
+          <div style={S.logoBox}>
+            <SafeTrackLogo size={26} />
+          </div>
           <span style={S.logoText}>SafeTrack</span>
           <span style={S.liveBadge}>LIVE</span>
         </div>
@@ -589,10 +523,8 @@ export default function Dashboard() {
       </div>
 
       <div style={S.body}>
-
         <div style={S.sidebar}>
           <div style={S.sidebarLabel}>{"TRACKED DEVICES (" + Object.keys(trackedUsers).length + ")"}</div>
-
           {Object.keys(trackedUsers).length === 0 ? (
             <div style={S.emptyState}>
               <div style={{ fontSize: "36px", marginBottom: "10px" }}>📵</div>
@@ -610,16 +542,12 @@ export default function Dashboard() {
                   backgroundColor: isActive ? "rgba(46,134,193,0.12)" : "rgba(255,255,255,0.02)",
                 }}>
                   <div style={S.cardTop}>
-                    <div style={{ ...S.avatar, backgroundColor: avatarColor.bg, color: avatarColor.color }}>
-                      {getUserName(uid)[0].toUpperCase()}
-                    </div>
+                    <div style={{ ...S.avatar, backgroundColor: avatarColor.bg, color: avatarColor.color }}>{getUserName(uid)[0].toUpperCase()}</div>
                     <div style={{ flex: 1 }}>
                       <div style={S.cardName}>{getUserName(uid)}</div>
                       <div style={S.cardStatus}>
                         <div style={{ ...S.statusDot, backgroundColor: recent ? "#2ECC71" : "#555" }}></div>
-                        <span style={{ fontSize: "11px", color: recent ? "#2ECC71" : "rgba(255,255,255,0.25)" }}>
-                          {recent ? "Live • " : ""}{getTimeDiff(location.timestamp)}
-                        </span>
+                        <span style={{ fontSize: "11px", color: recent ? "#2ECC71" : "rgba(255,255,255,0.25)" }}>{recent ? "Live • " : ""}{getTimeDiff(location.timestamp)}</span>
                       </div>
                     </div>
                     {sosAlerts[uid] && sosAlerts[uid].active && <div style={S.sosTag}>SOS</div>}
@@ -692,46 +620,24 @@ export default function Dashboard() {
                 ...S.tab,
                 backgroundColor: activeTab === tab.id ? "#2E86C1" : "transparent",
                 color: activeTab === tab.id ? "white" : "rgba(255,255,255,0.4)",
-              }}>
-                {tab.icon + " " + tab.label}
-              </button>
+              }}>{tab.icon + " " + tab.label}</button>
             ))}
           </div>
 
           {activeTab === "map" && (
             <div style={S.mapContainer}>
               {currentLocation ? (
-                <MapContainer
-                  key={selectedUser}
-                  center={[currentLocation.latitude, currentLocation.longitude]}
-                  zoom={16}
-                  style={{ height: "100%", width: "100%" }}
-                  scrollWheelZoom={true}
-                  zoomControl={false}
-                  dragging={true}
-                  touchZoom={true}
-                  doubleClickZoom={true}
-                  keyboard={true}
-                >
+                <MapContainer key={selectedUser} center={[currentLocation.latitude, currentLocation.longitude]} zoom={16}
+                  style={{ height: "100%", width: "100%" }} scrollWheelZoom={true} zoomControl={false}
+                  dragging={true} touchZoom={true} doubleClickZoom={true} keyboard={true}>
                   <TileLayer url={currentMapStyle.url} attribution="© OpenStreetMap" maxZoom={19} />
                   <ZoomControl position="topright" />
                   <ScaleControl position="bottomright" />
-
                   {replayPos ? <ReplayController replayPos={replayPos} /> : <MapController position={currentLocation} selectedUser={selectedUser} />}
-
-                  {/* Road snapped route — green */}
-                  {snappedRoute.length > 1 && (
-                    <Polyline positions={snappedRoute} color="#2ECC71" weight={4} opacity={0.9} />
-                  )}
-
-                  {/* Original GPS points — blue dashed fallback */}
+                  {snappedRoute.length > 1 && <Polyline positions={snappedRoute} color="#2ECC71" weight={4} opacity={0.9} />}
                   {snappedRoute.length <= 1 && locationHistory.length > 1 && (
-                    <Polyline
-                      positions={locationHistory.map((p) => [p.latitude, p.longitude])}
-                      color="#2E86C1" weight={3} opacity={0.8} dashArray="6,3"
-                    />
+                    <Polyline positions={locationHistory.map((p) => [p.latitude, p.longitude])} color="#2E86C1" weight={3} opacity={0.8} dashArray="6,3" />
                   )}
-
                   {showAllUsers && Object.entries(trackedUsers).map(([uid, loc]) => {
                     if (uid === selectedUser) return null;
                     const ac = getAvatarColor(uid);
@@ -751,7 +657,6 @@ export default function Dashboard() {
                       </Marker>
                     );
                   })}
-
                   {activeMarkerPos && (
                     <Marker position={activeMarkerPos}>
                       <Popup>
@@ -774,7 +679,6 @@ export default function Dashboard() {
                       </Popup>
                     </Marker>
                   )}
-
                   {Object.values(geofences).map((fence, i) => (
                     <Circle key={i} center={[fence.latitude, fence.longitude]} radius={fence.radius}
                       color={isInsideGeofence(fence) ? "#2ECC71" : "#E74C3C"}
@@ -784,20 +688,18 @@ export default function Dashboard() {
                 </MapContainer>
               ) : (
                 <div style={S.emptyMap}>
-                  <div style={{ fontSize: "50px", marginBottom: "12px" }}>🗺️</div>
-                  <div style={{ color: "rgba(255,255,255,0.4)", fontSize: "16px" }}>No location data</div>
+                  <SafeTrackLogo size={60} />
+                  <div style={{ color: "rgba(255,255,255,0.4)", fontSize: "16px", marginTop: "16px" }}>No location data</div>
                   <div style={{ color: "rgba(255,255,255,0.2)", fontSize: "13px", marginTop: "6px" }}>Open the mobile app and enable tracking</div>
                 </div>
               )}
 
-              {/* Road snapping indicator */}
               {isSnapping && (
                 <div style={{ position: "absolute", top: "12px", right: "60px", backgroundColor: "rgba(10,22,40,0.9)", padding: "4px 10px", borderRadius: "6px", zIndex: 1000, fontSize: "11px", color: "#2ECC71" }}>
                   🛣️ Snapping to roads...
                 </div>
               )}
 
-              {/* Map style + route legend */}
               <div style={S.mapStyleBar}>
                 {MAP_STYLES.map((style) => (
                   <button key={style.id} onClick={() => setMapStyle(style.id)} style={{
@@ -812,9 +714,7 @@ export default function Dashboard() {
                   color: showAllUsers ? "#2ECC71" : "rgba(255,255,255,0.6)",
                 }}>{showAllUsers ? "All ON" : "All OFF"}</button>
                 {snappedRoute.length > 1 && (
-                  <div style={{ ...S.mapStyleBtn, backgroundColor: "rgba(46,204,113,0.2)", color: "#2ECC71", cursor: "default" }}>
-                    🛣️ Road Route
-                  </div>
+                  <div style={{ ...S.mapStyleBtn, backgroundColor: "rgba(46,204,113,0.2)", color: "#2ECC71", cursor: "default" }}>🛣️ Road Route</div>
                 )}
               </div>
 
@@ -842,12 +742,9 @@ export default function Dashboard() {
                   <span style={S.countBadge}>{locationHistory.length + " points"}</span>
                   <button onClick={exportPDF} disabled={isExportingPDF || locationHistory.length === 0} style={{
                     backgroundColor: isExportingPDF ? "rgba(255,255,255,0.05)" : "rgba(231,76,60,0.15)",
-                    border: "1px solid rgba(231,76,60,0.3)",
-                    color: "#E74C3C", borderRadius: "6px", padding: "4px 12px",
-                    fontSize: "11px", cursor: "pointer", fontWeight: "500",
-                  }}>
-                    {isExportingPDF ? "⏳ Exporting..." : "📄 Export PDF"}
-                  </button>
+                    border: "1px solid rgba(231,76,60,0.3)", color: "#E74C3C", borderRadius: "6px",
+                    padding: "4px 12px", fontSize: "11px", cursor: "pointer", fontWeight: "500",
+                  }}>{isExportingPDF ? "⏳ Exporting..." : "📄 Export PDF"}</button>
                 </div>
               </div>
               {locationHistory.length === 0 ? (
@@ -878,11 +775,7 @@ export default function Dashboard() {
                 <span style={S.countBadge}>{"Last " + speedData.length + " points"}</span>
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px", marginBottom: "20px" }}>
-                {[
-                  ["Max Speed", maxSpeed.toFixed(1) + " km/h", "#E74C3C"],
-                  ["Avg Speed", avgSpeed.toFixed(1) + " km/h", "#2E86C1"],
-                  ["Distance", distanceTraveled.toFixed(2) + " km", "#2ECC71"],
-                ].map(([label, value, color]) => (
+                {[["Max Speed", maxSpeed.toFixed(1) + " km/h", "#E74C3C"], ["Avg Speed", avgSpeed.toFixed(1) + " km/h", "#2E86C1"], ["Distance", distanceTraveled.toFixed(2) + " km", "#2ECC71"]].map(([label, value, color]) => (
                   <div key={label} style={{ backgroundColor: "rgba(255,255,255,0.03)", borderRadius: "10px", padding: "14px", border: "1px solid rgba(255,255,255,0.06)", textAlign: "center" }}>
                     <div style={{ color: "rgba(255,255,255,0.4)", fontSize: "11px", marginBottom: "6px" }}>{label}</div>
                     <div style={{ color: color, fontSize: "20px", fontWeight: "500" }}>{value}</div>
@@ -984,9 +877,7 @@ export default function Dashboard() {
                         ["Time", formatTime(alert.timestamp)],
                         ["Since", getTimeDiff(alert.timestamp)],
                         ["Address", currentAddress],
-                        currentLocation && selectedUser === uid
-                          ? ["Location", Number(currentLocation.latitude).toFixed(5) + ", " + Number(currentLocation.longitude).toFixed(5)]
-                          : null,
+                        currentLocation && selectedUser === uid ? ["Location", Number(currentLocation.latitude).toFixed(5) + ", " + Number(currentLocation.longitude).toFixed(5)] : null,
                       ].filter(Boolean).map(([label, value]) => (
                         <div key={label} style={S.sosDetailRow}>
                           <span style={S.sosDetailLabel}>{label}</span>
@@ -1002,7 +893,6 @@ export default function Dashboard() {
               )}
             </div>
           )}
-
         </div>
       </div>
     </div>
@@ -1015,8 +905,7 @@ const S = {
   sosNameTag: { backgroundColor: "rgba(0,0,0,0.25)", padding: "2px 10px", borderRadius: "20px", fontSize: "12px" },
   header: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 20px", background: "linear-gradient(90deg, #1A3C6E 0%, #1e4a8a 100%)", borderBottom: "1px solid rgba(46,134,193,0.25)" },
   headerLeft: { display: "flex", alignItems: "center", gap: "10px" },
-  logoBox: { width: "30px", height: "30px", backgroundColor: "#2E86C1", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center" },
-  logoDot: { width: "12px", height: "12px", backgroundColor: "white", borderRadius: "50%" },
+  logoBox: { width: "34px", height: "34px", backgroundColor: "#0D1F3C", borderRadius: "8px", border: "1px solid rgba(46,134,193,0.4)", display: "flex", alignItems: "center", justifyContent: "center" },
   logoText: { color: "white", fontSize: "18px", fontWeight: "500" },
   liveBadge: { backgroundColor: "#2ECC71", color: "white", fontSize: "9px", fontWeight: "500", padding: "2px 8px", borderRadius: "20px", letterSpacing: "0.8px" },
   headerRight: { display: "flex", alignItems: "center", gap: "12px" },

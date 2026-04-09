@@ -29,6 +29,16 @@ function App() {
         fontSize: "18px"
       }}>
         <div style={{ textAlign: "center" }}>
+          <svg width="60" height="60" viewBox="0 0 100 100" style={{ marginBottom: "16px" }}>
+            <circle cx="50" cy="50" r="48" fill="#0D1F3C"/>
+            <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(46,204,113,0.15)" strokeWidth="1.5"/>
+            <circle cx="50" cy="50" r="32" fill="none" stroke="rgba(46,204,113,0.25)" strokeWidth="1.5"/>
+            <circle cx="50" cy="50" r="22" fill="rgba(46,134,193,0.2)" stroke="#2E86C1" strokeWidth="1.5"/>
+            <path d="M50 28 Q64 28 64 42 Q64 54 50 68 Q36 54 36 42 Q36 28 50 28 Z" fill="#2E86C1"/>
+            <circle cx="50" cy="42" r="7" fill="white"/>
+            <circle cx="50" cy="42" r="3" fill="#2E86C1"/>
+            <circle cx="50" cy="70" r="3.5" fill="#2ECC71"/>
+          </svg>
           <div style={{
             width: "50px",
             height: "50px",

@@ -2,6 +2,19 @@ import React, { useState } from "react";
 import { auth } from "../firebase";
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
 
+const SafeTrackLogo = ({ size = 80 }) => (
+  <svg width={size} height={size} viewBox="0 0 100 100">
+    <circle cx="50" cy="50" r="48" fill="#0D1F3C"/>
+    <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(46,204,113,0.15)" strokeWidth="1.5"/>
+    <circle cx="50" cy="50" r="32" fill="none" stroke="rgba(46,204,113,0.25)" strokeWidth="1.5"/>
+    <circle cx="50" cy="50" r="22" fill="rgba(46,134,193,0.2)" stroke="#2E86C1" strokeWidth="1.5"/>
+    <path d="M50 28 Q64 28 64 42 Q64 54 50 68 Q36 54 36 42 Q36 28 50 28 Z" fill="#2E86C1"/>
+    <circle cx="50" cy="42" r="7" fill="white"/>
+    <circle cx="50" cy="42" r="3" fill="#2E86C1"/>
+    <circle cx="50" cy="70" r="3.5" fill="#2ECC71"/>
+  </svg>
+);
+
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -10,10 +23,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
-    if (!email || !password) {
-      setError("Please fill all fields");
-      return;
-    }
+    if (!email || !password) { setError("Please fill all fields"); return; }
     setLoading(true);
     setError("");
     try {
@@ -32,9 +42,10 @@ export default function LoginPage() {
   return (
     <div style={styles.container}>
       <div style={styles.card}>
+
         {/* Logo */}
         <div style={styles.logoBox}>
-          <span style={styles.logoIcon}>📍</span>
+          <SafeTrackLogo size={80} />
         </div>
         <h1 style={styles.title}>SafeTrack</h1>
         <p style={styles.subtitle}>Real-Time Safety Dashboard</p>
@@ -64,16 +75,11 @@ export default function LoginPage() {
           />
 
           {error && (
-            <div style={styles.errorBox}>
-              ⚠️ {error}
-            </div>
+            <div style={styles.errorBox}>⚠️ {error}</div>
           )}
 
           <button
-            style={{
-              ...styles.button,
-              opacity: loading ? 0.7 : 1,
-            }}
+            style={{ ...styles.button, opacity: loading ? 0.7 : 1 }}
             onClick={handleSubmit}
             disabled={loading}
           >
@@ -82,13 +88,7 @@ export default function LoginPage() {
 
           <p style={styles.switchText}>
             {isRegister ? "Already have an account? " : "Don't have an account? "}
-            <span
-              style={styles.switchLink}
-              onClick={() => {
-                setIsRegister(!isRegister);
-                setError("");
-              }}
-            >
+            <span style={styles.switchLink} onClick={() => { setIsRegister(!isRegister); setError(""); }}>
               {isRegister ? "Sign In" : "Register"}
             </span>
           </p>
@@ -113,18 +113,13 @@ const styles = {
     textAlign: "center",
   },
   logoBox: {
-    width: "80px",
-    height: "80px",
-    backgroundColor: "#1A3C6E",
-    borderRadius: "20px",
+    width: "90px",
+    height: "90px",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     margin: "0 auto 16px",
-    boxShadow: "0 0 30px rgba(46,134,193,0.4)",
-  },
-  logoIcon: {
-    fontSize: "36px",
+    filter: "drop-shadow(0 0 20px rgba(46,134,193,0.5))",
   },
   title: {
     color: "white",
@@ -164,6 +159,7 @@ const styles = {
     fontSize: "14px",
     marginBottom: "12px",
     outline: "none",
+    boxSizing: "border-box",
   },
   errorBox: {
     backgroundColor: "rgba(231,76,60,0.1)",
